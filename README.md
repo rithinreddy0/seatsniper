@@ -1,3 +1,6 @@
+> **This fork adds a Render Telegram monitor.** See [Render setup](docs/render.md).
+> The original Discord bot and its documentation remain available below.
+
 <p align="center">
   <img src="assets/logo.png" alt="SeatSniper" width="320">
 </p>

@@ -1,6 +1,6 @@
 /** Render web entrypoint: fixed environment watch, Telegram alerts, no Discord credentials. */
 import { closeBms, fetchCinemaHtml, initBms, rotateSessionIfStale } from "./bms.ts";
-import { monitorResponse, type MonitorStatus } from "./monitor-health.ts";
+import { monitorError, monitorResponse, type MonitorStatus } from "./monitor-health.ts";
 import { deliverDurably, sendTelegram } from "./telegram-delivery.ts";
 import { todayIST } from "./time-filter.ts";
 import { parseCinemaPage, readMonitorConfig } from "./venue-monitor.ts";
@@ -89,10 +89,7 @@ async function check(): Promise<void> {
     status.failures = (status.failures ?? 0) + 1;
     status.phase = "degraded";
     // Provider errors have no credentials. Never log DB/Telegram URLs or their raw errors.
-    status.lastError =
-      status.lastSuccess === status.lastAttempt
-        ? "Notification or database operation failed"
-        : "Availability or delivery check failed; inspect service configuration";
+    status.lastError = monitorError(error);
     console.error(
       `[monitor] check failed (${status.failures}); ${error instanceof Error && /^Telegram /.test(error.message) ? error.message : status.lastError}`,
     );

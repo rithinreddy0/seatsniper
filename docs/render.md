@@ -46,6 +46,11 @@ Use cron-job.org or an existing external scheduler: method GET, URL
 Do not put tokens in the ping URL. No account or cron job is automatically created by
 this repository. Enable failure notifications in the scheduler if desired.
 
+This fork also includes `.github/workflows/render-keepalive.yml`, a no-secret GitHub
+Actions health ping about every five minutes. Scheduled workflows must be enabled
+and present on the default branch. GitHub schedules are best effort and can be delayed;
+an independent external scheduler is preferable if delays exceed Render's idle window.
+
 ## Commands
 
 `bun run start:render` starts the Telegram web monitor. `bun run probe:cinema` makes one

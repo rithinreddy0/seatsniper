@@ -1,5 +1,6 @@
 import { expect, test } from "bun:test";
-import { monitorResponse } from "./monitor-health.ts";
+import { monitorError, monitorResponse } from "./monitor-health.ts";
+import { BmsError } from "./provider-error.ts";
 
 test("health is side-effect free; readiness exposes missing setup without exposing credentials", async () => {
   const status = {
@@ -18,4 +19,11 @@ test("health is side-effect free; readiness exposes missing setup without exposi
 test("readiness fails when successful availability checks become stale", () => {
   const status = { phase: "monitoring", missing: [], lastSuccess: new Date(0).toISOString() };
   expect(monitorResponse(new Request("https://example.com/ready"), status).status).toBe(503);
+});
+
+test("provider diagnostics remain actionable while generic errors cannot leak credentials", () => {
+  expect(monitorError(new BmsError("blocked", "HTTP 403 (123 bytes)"))).toContain("HTTP 403");
+  expect(monitorError(new Error("postgres://secret-password@private-host/db"))).not.toContain(
+    "secret-password",
+  );
 });

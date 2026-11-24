@@ -1,4 +1,11 @@
 /** Public, non-sensitive process liveness and operational readiness. */
+import { BmsError } from "./provider-error.ts";
+
+export function monitorError(error: unknown): string {
+  if (error instanceof BmsError) return `BookMyShow ${error.kind}: ${error.message}`;
+  return "Availability or delivery check failed; inspect service configuration";
+}
+
 export type MonitorStatus = {
   phase: string;
   missing: string[];

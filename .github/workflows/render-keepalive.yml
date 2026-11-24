@@ -1,0 +1,20 @@
+name: Render keep-alive
+
+on:
+  schedule:
+    - cron: '2-59/5 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: render-keepalive
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Ping the Render health endpoint
+        run: curl --fail --silent --show-error --retry 2 --retry-delay 5 --connect-timeout 15 --max-time 90 https://seatsniper-telegram.onrender.com/health
