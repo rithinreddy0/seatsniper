@@ -199,11 +199,33 @@ export async function fetchShowtimes(
 }
 
 async function fetchPage(t: Target): Promise<{ title: string; html: string; posterUrl?: string }> {
+  const html = await fetchBmsHtml(showtimesUrl(t));
+  const title = parseMovieTitle(html);
+  if (!title) {
+    throw new BmsError(
+      "not_found",
+      `no movie found for ${t.eventCode} in ${t.city} — check the event code`,
+    );
+  }
+  const posterUrl = parseMoviePoster(html);
+  return { title, html, ...(posterUrl ? { posterUrl } : {}) };
+}
+
+/** Cinema monitoring uses the same restricted transport as movie monitoring. */
+export function fetchCinemaHtml(url: string): Promise<string> {
+  const parsed = new URL(url);
+  if (parsed.origin !== "https://in.bookmyshow.com" || !parsed.pathname.startsWith("/cinemas/")) {
+    throw new BmsError("bad_url", "Expected a BookMyShow cinema URL");
+  }
+  return fetchBmsHtml(parsed.href);
+}
+
+async function fetchBmsHtml(url: string): Promise<string> {
   if (!session) throw new BmsError("unparseable", "initBms() was not called");
 
   let res: tls.Response;
   try {
-    res = await session.get(showtimesUrl(t));
+    res = await session.get(url);
   } catch (e) {
     throw new BmsError("network", `request failed: ${(e as Error).message}`);
   }
@@ -221,17 +243,7 @@ async function fetchPage(t: Target): Promise<{ title: string; html: string; post
       `not a BookMyShow app page (${html.length} bytes, no __INITIAL_STATE__) — blocked or reshaped`,
     );
   }
-  // A nonexistent event code (e.g. ET99999999) renders no <title>, whereas a valid
-  // film with zero shows still renders "<Movie> Movie Showtimes in <City>".
-  const title = parseMovieTitle(html);
-  if (!title) {
-    throw new BmsError(
-      "not_found",
-      `no movie found for ${t.eventCode} in ${t.city} — check the event code`,
-    );
-  }
-  const posterUrl = parseMoviePoster(html);
-  return { title, html, ...(posterUrl ? { posterUrl } : {}) };
+  return html;
 }
 
 /** Extract a verified BookMyShow movie poster (`iedb/movies/images/`), never generic logos. */

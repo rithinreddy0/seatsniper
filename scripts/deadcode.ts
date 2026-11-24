@@ -83,6 +83,7 @@ function packageNameFromSpecifier(spec: string): string | null {
 function entrypoints(allSrc: string[], allScripts: string[]): string[] {
   const entries = [
     join(SRC_DIR, "index.ts"),
+    join(SRC_DIR, "render-monitor.ts"),
     join(SRC_DIR, "register.ts"),
     join(ROOT, "integration.ts"),
     ...allScripts,
